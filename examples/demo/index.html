@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+<script src="../../dist/utils.js"></script>
+<script>
+    var util = new utils({
+        data() {
+            return {
+                title: "10"
+            }
+        },
+        watch: {
+            title(newVal, oldVal) {
+                console.log(newVal);
+                console.log(oldVal);
+            },
+        },
+    });
+    util.title = "101"
+</script>
+</html>
