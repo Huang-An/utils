@@ -1,5 +1,5 @@
-import {observer} from "./observer/index";
-import Watcher from "./observer/watcher";
+import {observer} from "./observer";
+import Watcher from "./watcher";
 
 export default class listener {
     constructor(option) {

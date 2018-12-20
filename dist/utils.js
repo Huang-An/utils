@@ -153,6 +153,122 @@
         }
     }
 
-    return listener;
+    var myPromise = function myPromise(execute) {
+        this.status = myPromise.PENDIN;
+        this.value = null; // 成功之后的返回值
+        this.reason = null; // 失败之后的返回值
+        this.onFulfilledQueue = []; // 完成之后的队列
+        this.onRejectedQueue = []; // 失败队列
+        this.init(execute);
+    };
+
+    myPromise.prototype.init = function init (execute) {
+        try {
+            // 绑定this执行
+            this.resolve = this.resolve.bind(this);
+            this.reject = this.reject.bind(this);
+            execute(this.resolve, this.reject);
+        } catch (e) {
+            this.reject(e);
+        }
+    };
+
+    myPromise.prototype.resolve = function resolve (value) {
+            var this$1 = this;
+
+        // 完成了，将状态改为完成，执行完成队列里的函数
+        if (this.status === myPromise.PENDIN) {
+            // 放进setTimeout宏任务 满足Promise/A规范,使得Promise是异步的
+            setTimeout(function () {
+                this$1.status = myPromise.FULFILLED;
+                this$1.value = value;
+                this$1.onFulfilledQueue.forEach(function (cb) { return cb(this$1.value); });
+            });
+        }
+    };
+
+    myPromise.prototype.reject = function reject (reason) {
+            var this$1 = this;
+
+        // 失败了，将状态改为失败，执行失败队列里的函数
+        if (this.status === myPromise.PENDIN) {
+            // 放进setTimeout宏任务 满足Promise/A规范,使得Promise是异步的
+            setTimeout(function () {
+                this$1.status = myPromise.REJECTED;
+                this$1.reason = reason;
+                this$1.onRejectedQueue.forEach(function (cb) { return cb(this$1.reason); });
+            });
+        }
+    };
+
+    myPromise.prototype.then = function then (onFulfilled, onRejected) {
+            var this$1 = this;
+
+        // 处理参数
+        onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : function (value) { return value; };
+        onRejected = typeof onRejected === 'function' ? onRejected : function (reason) {
+            throw reason
+        };
+        // 如果已经完成，那就立马执行onFulfilled
+        if (this.status === myPromise.FULFILLED) {
+            return new myPromise(function (resolve, reject) {
+                setTimeout(function () {
+                    try {
+                        var x = onFulfilled(this$1.value);
+                        resolve(x);
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
+            });
+        }
+        // 如果已经失败，那就立马执行onRejected
+        if (this.status === myPromise.REJECTED) {
+            return new myPromise(function (resolve, reject) {
+                setTimeout(function () {
+                    try {
+                        var x = onRejected(this$1.reason);
+                        resolve(x);
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
+            });
+        }
+        // 如果是等待状态，就先将要执行的onFulfilled，onRejected放进队列等待完成后执行
+        if (this.status === myPromise.PENDIN) {
+            return new myPromise(function (resolve, reject) {
+                // 放进完成队列等待执行
+                this$1.onFulfilledQueue.push(function (value) {
+                    try {
+                        var x = onFulfilled(value);
+                        resolve(x);
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
+                // 放进失败队列等待执行
+                this$1.onRejectedQueue.push(function (reason) {
+                    try {
+                        var x = onRejected(reason);
+                        resolve(x);
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
+            });
+        }
+    };
+
+    myPromise.PENDIN = 'pending'; // 等待状态
+    myPromise.FULFILLED = 'fulfilled'; // 完成
+    myPromise.REJECTED = 'rejected'; // 拒绝
+
+    var index = {
+        Listener: listener,
+        MyPromise: myPromise
+    };
+
+    return index;
 
 })));

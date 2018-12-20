@@ -1,21 +1,7 @@
-import Listener from "./core/listener";
+import Listener from "./core/listener/index";
+import MyPromise from './core/promise/index';
 
-const listener = new Listener({
-    data() {
-        return {
-            title: "测试",
-            options: {
-                label: "label",
-                value: "value"
-            }
-        };
-    },
-
-    watch: {
-        title(value, oldVal) {
-            console.log(oldVal);
-        }
-    }
-});
-
-listener.title = "a";
+export default {
+    Listener,
+    MyPromise
+}

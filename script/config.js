@@ -1,6 +1,5 @@
 const path = require('path');
 const buble = require('rollup-plugin-buble');
-const eslint = require('rollup-plugin-eslint');
 const alias = require('rollup-plugin-alias');
 const aliases = require('./alias');
 
@@ -18,7 +17,7 @@ const resolve = src => {
 
 const builds = {
     'dev': {
-        entry: resolve('src/core/listener.js'),
+        entry: resolve('src/index.js'),
         dest: resolve('dist/utils.js'),
         moduleName: "utils",
         format: 'umd',
@@ -34,9 +33,6 @@ function getConfig(name) {
     return {
         input: opts.entry,
         plugins: [
-            eslint.eslint({
-                exclude: 'dist'
-            }),
             buble(),
             alias(Object.assign({}, aliases, opts.alias))
         ],
